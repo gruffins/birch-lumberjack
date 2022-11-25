@@ -1,0 +1,4 @@
+use_frameworks!
+target 'BirchLumberjack_Tests' do
+  pod 'BirchLumberjack', :path => '../'
+end
