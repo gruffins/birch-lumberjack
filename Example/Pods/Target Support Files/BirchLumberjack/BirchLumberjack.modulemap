@@ -1,0 +1,6 @@
+framework module BirchLumberjack {
+  umbrella header "BirchLumberjack-umbrella.h"
+
+  export *
+  module * { export * }
+}
