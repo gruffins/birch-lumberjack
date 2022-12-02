@@ -8,11 +8,5 @@ platform :ios do
     add_git_tag(tag: version)
     push_to_git_remote
     pod_push(allow_warnings: true, verbose: true)
-    carthage(
-      command: 'build',
-      use_xcframeworks: true,
-      archive: true
-    )
-    puts "Upload Birch.framework.zip to the github release"
   end
 end
