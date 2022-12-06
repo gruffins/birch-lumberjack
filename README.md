@@ -20,5 +20,7 @@ github "gruffins/birch-lumberjack"
 
 Setup [Birch](https://github.com/gruffins/birch-ios) then add the logger to CocoaLumberjack
 ```swift
+import BirchLumberjack
+
 DDLog.add(DDBirchLogger())
 ```
