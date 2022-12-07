@@ -1,4 +1,7 @@
 # Birch
+[![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
+[![CocoaPods compatible](https://img.shields.io/cocoapods/v/BirchLumberjack.svg)](https://cocoapods.org/pods/BirchLumberjack)
+[![Swift Package Manager compatible](https://img.shields.io/badge/Swift%20Package%20Manager-compatible-brightgreen.svg)](https://github.com/apple/swift-package-manager)
 
 Simple, lightweight remote logging for iOS.
 
@@ -14,6 +17,11 @@ pod 'BirchLumberjack'
 ## Using Carthage
 ```ruby
 github "gruffins/birch-lumberjack"
+```
+
+## Using Swift Package Manager
+```
+.package(url: "https://github.com/gruffins/birch-lumberjack.git", majorVersion: 1)
 ```
 
 # Setup
