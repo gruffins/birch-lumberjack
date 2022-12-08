@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name = 'BirchLumberjack'
-  s.version = '1.0.0'
+  s.version = '1.0.1'
   s.summary = 'CocoaLumberjack wrapper for Birch.'
   s.homepage = 'https://github.com/gruffins/birch-lumberjack'
   s.license = { type: 'MIT', file: 'LICENSE' }
