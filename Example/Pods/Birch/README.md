@@ -14,7 +14,7 @@ pod 'BirchLumberjack' # optional. only used if you use CocoaLumberjack
 
 ## Using Carthage
 ```ruby
-github 'gruffins/birch-ios' '1.0.0'
+github 'gruffins/birch-ios' '1.0.1'
 ```
 
 # Setup

@@ -1,6 +1,6 @@
 PODS:
   - Birch (1.0.0)
-  - BirchLumberjack (1.0.0):
+  - BirchLumberjack (1.0.1):
     - Birch
     - CocoaLumberjack
   - CocoaLumberjack (3.7.4):
@@ -21,7 +21,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Birch: 5d940488381029bf174a1dc0f929dca43e2f1739
-  BirchLumberjack: 1c7e285ed92a39f65562d4d5c806e887235b2355
+  BirchLumberjack: b2dc45566eb408041591c239eee67822cc229cec
   CocoaLumberjack: 543c79c114dadc3b1aba95641d8738b06b05b646
 
 PODFILE CHECKSUM: 15471668cd2de17c17a4404666273771dbe44cec
