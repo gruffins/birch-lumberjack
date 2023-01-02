@@ -1,4 +1,7 @@
 use_frameworks!
+
+platform :ios, '11.0'
+
 target 'BirchLumberjack_Tests' do
   pod 'BirchLumberjack', :path => '../'
 end

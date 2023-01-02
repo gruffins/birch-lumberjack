@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import UIKit
 
 class Utils {
 
@@ -55,8 +54,7 @@ extension Utils {
 
     static func jsonToDictionary(input: String) -> [String: Any]? {
         if let data = input.data(using: .utf8),
-           let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
-           let json = json
+           let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
         {
             return json
         }
@@ -97,5 +95,54 @@ extension Utils {
         if !fileExists(url: url) {
             try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
         }
+    }
+
+    static func diskAvailable() -> Bool {
+        var available = false
+
+        safeIgnore {
+            let manager = FileManager.default
+            let url = manager.temporaryDirectory
+            let attributes = try? manager.attributesOfFileSystem(forPath: url.path)
+            if let capacity = attributes?[.systemFreeSize] as? Int {
+                available = capacity > 0
+            }
+        }
+
+        return available
+    }
+}
+
+// Encryption
+
+extension Utils {
+    static func parsePublicKey(pem: String) -> SecKey? {
+        if let data = Data(
+            base64Encoded: pem
+                .replacingOccurrences(of: "-----BEGIN PUBLIC KEY-----", with: "")
+                .replacingOccurrences(of: "-----END PUBLIC KEY-----", with: "")
+                .replacingOccurrences(of: "\n", with: ""),
+            options: .ignoreUnknownCharacters
+        ) {
+            let attrs: [String: Any] = [
+                String(kSecAttrKeyType): kSecAttrKeyTypeRSA,
+                String(kSecAttrKeyClass): kSecAttrKeyClassPublic,
+                String(kSecAttrKeySizeInBits): data.count * 8
+            ]
+
+            return SecKeyCreateWithData(data as CFData, attrs as CFDictionary, nil)
+        }
+
+        return nil
+    }
+}
+
+// Compression
+
+extension Utils {
+
+    @available(iOS 13.0, macOS 10.15, watchOS 6.0, tvOS 13.0, *)
+    static func compress(data: Data) throws -> Data {
+        return try (data as NSData).compressed(using: .zlib) as Data
     }
 }

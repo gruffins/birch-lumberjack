@@ -8,7 +8,7 @@
 import Foundation
 
 public class Birch {
-    static var engine: Engine?
+    static var engine: EngineProtocol?
     static var flushPeriod: Int?
 
     public static var debug: Bool = false {
@@ -21,6 +21,8 @@ public class Birch {
             engine?.syncConfiguration()
         }
     }
+
+    public static var optOut: Bool = false
 
     public static var host: String? {
         get {
@@ -61,12 +63,25 @@ public class Birch {
         }
     }
 
-    public static func initialize(_ apiKey: String) {
+    public static func initialize(
+        _ apiKey: String,
+        publicKey: String? = nil,
+        scrubbers: [Scrubber] = [
+            PasswordScrubber(),
+            EmailScrubber()
+        ]
+    ) {
         if engine == nil {
+            var encryption: Encryption?
+
+            if let publicKey = publicKey, let enc = Encryption.create(publicKey: publicKey) {
+                encryption = enc
+            }
+
             let eventBus = EventBus()
             let storage = Storage()
             let source = Source(storage: storage, eventBus: eventBus)
-            let logger = Logger()
+            let logger = Logger(encryption: encryption)
             let network = Network(apiKey: apiKey)
 
             engine = Engine(
@@ -74,7 +89,8 @@ public class Birch {
                 logger: logger,
                 storage: storage,
                 network: network,
-                eventBus: eventBus
+                eventBus: eventBus,
+                scrubbers: scrubbers
             )
             engine?.start()
         }
