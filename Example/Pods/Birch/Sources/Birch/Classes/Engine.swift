@@ -6,9 +6,18 @@
 //
 
 import Foundation
-import UIKit
 
-class Engine {
+protocol EngineProtocol {
+    var source: Source { get }
+
+    func start()
+    @discardableResult func log(level: Logger.Level, message: @escaping () -> String) -> Bool
+    @discardableResult func flush() -> Bool
+    @discardableResult func updateSource(source: Source) -> Bool
+    @discardableResult func syncConfiguration() -> Bool
+}
+
+class Engine: EngineProtocol {
     struct Constants {
         static let SYNC_PERIOD_SECONDS = 60 * 15
         static let FLUSH_PERIOD_SECONDS = 60 * 30
@@ -26,6 +35,7 @@ class Engine {
     private let storage: Storage
     private let network: Network
     private let eventBus: EventBus
+    private let scrubbers: [Scrubber]
     private var isStarted = false
     private var flushPeriod: Int {
         didSet {
@@ -50,7 +60,8 @@ class Engine {
         logger: Logger,
         storage: Storage,
         network: Network,
-        eventBus: EventBus
+        eventBus: EventBus,
+        scrubbers: [Scrubber]
     ) {
         self.source = source
         self.logger = logger
@@ -58,6 +69,7 @@ class Engine {
         self.network = network
         self.eventBus = eventBus
         self.flushPeriod = storage.flushPeriod
+        self.scrubbers = scrubbers
 
         eventBus.subscribe(listener: self)
     }
@@ -87,12 +99,31 @@ class Engine {
                 ) { [weak self] _ in self?.flush() }
             }
 
+            queue.asyncAfter(deadline: .now() + 5.0) { [weak self] in
+                self?.trimFiles()
+            }
+
+            queue.asyncAfter(deadline: .now() + 10.0) { [weak self] in
+                self?.syncConfiguration()
+            }
+
+            queue.asyncAfter(deadline: .now() + 15.0) { [weak self] in
+                self?.flush()
+            }
+
             updateSource(source: source)
         }
     }
 
-    func log(level: Logger.Level, message: @escaping () -> String) {
+    @discardableResult func log(level: Logger.Level, message: @escaping () -> String) -> Bool {
+        guard !Birch.optOut else { return false }
+
         let timestamp = Utils.dateFormatter.string(from: Date())
+        let scrubbed = {
+            self.scrubbers.reduce(message()) { acc, scrubber in
+                scrubber.scrub(input: acc)
+            }
+        }
 
         logger.log(
             level: level,
@@ -101,13 +132,16 @@ class Engine {
                     "timestamp": timestamp,
                     "level": level.rawValue,
                     "source": self.source.toJson(),
-                    "message": message()
+                    "message": scrubbed()
                 ]) ?? ""
             },
-            original: message)
+            original: scrubbed)
+        return true
     }
 
-    func flush() {
+    @discardableResult func flush() -> Bool {
+        guard !Birch.optOut else { return false }
+
         queue.async {
             self.logger.rollFile()
             self.logger.nonCurrentFiles
@@ -116,27 +150,35 @@ class Engine {
                     if Utils.fileSize(url: url) == 0 {
                         Utils.deleteFile(url: url)
                     } else {
-                        self.network.uploadLogs(url: url) { success in
-                            if success {
-                                if Birch.debug {
-                                    Birch.d { "[Birch] Removing file \(url.lastPathComponent)" }
-                                }
+                        Utils.safeIgnore {
+                            try self.network.uploadLogs(url: url) { success in
+                                if success {
+                                    if Birch.debug {
+                                        Birch.d { "[Birch] Removing file \(url.lastPathComponent)" }
+                                    }
 
-                                Utils.deleteFile(url: url)
+                                    Utils.deleteFile(url: url)
+                                }
                             }
                         }
                     }
                 }
         }
+        return true
     }
 
-    func updateSource(source: Source) {
+    @discardableResult func updateSource(source: Source) -> Bool {
+        guard !Birch.optOut else { return false }
+
         queue.async {
             self.network.syncSource(source: source)
         }
+        return true
     }
 
-    func syncConfiguration() {
+    @discardableResult func syncConfiguration() -> Bool {
+        guard !Birch.optOut else { return false }
+
         queue.async {
             self.network.getConfiguration(source: self.source) { json in
                 let level = Logger.Level(rawValue: (json["log_level"] as? Int) ?? Logger.Level.error.rawValue)
@@ -149,6 +191,7 @@ class Engine {
                 self.flushPeriod = period
             }
         }
+        return true
     }
 
     func trimFiles(now: Date = Date()) {

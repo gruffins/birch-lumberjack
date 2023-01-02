@@ -1,6 +1,6 @@
 PODS:
-  - Birch (1.0.0)
-  - BirchLumberjack (1.0.3):
+  - Birch (1.4.0)
+  - BirchLumberjack (1.1.0):
     - Birch
     - CocoaLumberjack
   - CocoaLumberjack (3.7.4):
@@ -20,10 +20,10 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  Birch: 5d940488381029bf174a1dc0f929dca43e2f1739
-  BirchLumberjack: 4cb2cffa2615146c49165ef717a06d91607c73c8
+  Birch: f9403f7ef86edb088876af7af2ba32c6db959e21
+  BirchLumberjack: d9d5a167e12ea84a2cebb04b24079aad88bc950e
   CocoaLumberjack: 543c79c114dadc3b1aba95641d8738b06b05b646
 
-PODFILE CHECKSUM: 15471668cd2de17c17a4404666273771dbe44cec
+PODFILE CHECKSUM: e9fadcec231fa5b77c79f79def25e7f7f698b6e5
 
 COCOAPODS: 1.11.3

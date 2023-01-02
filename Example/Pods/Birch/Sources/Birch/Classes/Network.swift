@@ -29,7 +29,7 @@ class Network {
         self.http = http
     }
 
-    func uploadLogs(url: URL, callback: @escaping (Bool) -> Void) {
+    func uploadLogs(url: URL, callback: @escaping (Bool) -> Void) throws {
         Utils.safeIgnore {
             if Birch.debug {
                 Birch.d { "[Birch] Pushing logs \(url.lastPathComponent)" }
@@ -38,7 +38,7 @@ class Network {
             if let requestUrl = self.createURL(path: self.configuration.uploadPath),
                let file = self.fileManager.contents(atPath: url.path)
             {
-                self.http.post(
+                try self.http.post(
                     url: requestUrl,
                     file: file,
                     headers: ["X-API-Key": self.apiKey]
@@ -107,8 +107,9 @@ class Network {
                             Birch.d { "[Birch] Get configuration responded. success=\(response.success)" }
                         }
 
-                        if let dict = Utils.jsonToDictionary(input: response.body) {
-                            callback(dict)
+                        if let dict = Utils.jsonToDictionary(input: response.body),
+                           let sourceConfig = dict["source_configuration"] as? [String: Any] {
+                            callback(sourceConfig)
                         }
                     }
                 }

@@ -19,6 +19,7 @@ class Logger {
     private let queue = DispatchQueue(label: "Birch-Logger")
     private var fileHandle: FileHandle?
 
+    let encryption: Encryption?
     let directory: URL
     let current: URL
 
@@ -33,7 +34,9 @@ class Logger {
         }
     }
 
-    init() {
+    init(encryption: Encryption?) {
+        self.encryption = encryption
+
         directory = FileManager.default.temporaryDirectory.appendingPathComponent("birch")
         current = directory.appendingPathComponent("current")
 
@@ -43,7 +46,7 @@ class Logger {
     }
 
     func log(level: Level, block: @escaping () -> String, original: @escaping () -> String) {
-        if level.rawValue >= self.level.rawValue || Birch.debug {
+        if Utils.diskAvailable() && (level.rawValue >= self.level.rawValue || Birch.debug) {
             queue.async {
                 Utils.safeIgnore {
                     self.ensureCurrentFileExists()
@@ -52,14 +55,31 @@ class Logger {
                         self.fileHandle = try FileHandle(forWritingTo: self.current)
                     }
 
-                    if #available(iOS 13.4, *) {
+                    if #available(iOS 13.4, macOS 10.15.4, watchOS 6.2, tvOS 13.14, *) {
                         try self.fileHandle?.seekToEnd()
                     } else {
                         self.fileHandle?.seekToEndOfFile()
                     }
 
-                    if let data = "\(block()),\n".data(using: .utf8) {
+                    var message: String
+
+                    if let encryption = self.encryption {
+                        message = Utils.dictionaryToJson(input: [
+                            "em": encryption.encrypt(input: block()),
+                            "ek": encryption.encryptedKey
+                        ]) ?? "{}"
+                    } else {
+                        message = block()
+                    }
+
+                    if let data = "\(message),\n".data(using: .utf8) {
                         self.fileHandle?.write(data)
+
+                        if #available(iOS 13.0, macOS 10.15, watchOS 6.0, tvOS 13.0, *) {
+                            try self.fileHandle?.synchronize()
+                        } else {
+                            self.fileHandle?.synchronizeFile()
+                        }
                     }
 
                     if Birch.debug {
@@ -101,7 +121,7 @@ class Logger {
                     Birch.d { "[Birch] Rolled file to \(rollTo.lastPathComponent)." }
                 }
 
-                if #available(iOS 13.0, *) {
+                if #available(iOS 13.0, macOS 10.15, watchOS 6.0, tvOS 13.0, *) {
                     try self.fileHandle?.close()
                 } else {
                     self.fileHandle?.closeFile()
