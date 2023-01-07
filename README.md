@@ -3,7 +3,7 @@
 [![CocoaPods compatible](https://img.shields.io/cocoapods/v/BirchLumberjack.svg)](https://cocoapods.org/pods/BirchLumberjack)
 [![Swift Package Manager compatible](https://img.shields.io/badge/Swift%20Package%20Manager-compatible-brightgreen.svg)](https://github.com/apple/swift-package-manager)
 
-Simple, lightweight remote logging for iOS.
+Simple, lightweight remote logging for iOS / macOS / tvOS.
 
 Sign up for your free account at [Birch](https://birch.ryanfung.com).
 
