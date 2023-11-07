@@ -1,6 +1,10 @@
 default_platform :ios
 
 platform :ios do
+  lane :lint do
+    pod_lib_lint(skip_tests: true)
+  end
+
   lane :release do
     version = read_podspec['version']
 
