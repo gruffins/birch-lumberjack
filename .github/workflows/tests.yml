@@ -1,0 +1,20 @@
+name: Tests
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: macos-13
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+      - name: Cocoapods Lint
+        run: bundle exec fastlane lint
+      - name: Swift PM
+        run: swift package describe
